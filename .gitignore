@@ -1,0 +1,9 @@
+..venv/
+*.csv
+*.txt
+*.json
+*.log
+*.pyc
+
+venv/
+node_modules/
