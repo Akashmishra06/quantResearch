@@ -26,19 +26,22 @@ export default function StraddleChart() {
   const computeNiceYDomain = (values) => {
     const min = Math.min(...values);
     const max = Math.max(...values);
-    const range = max - min || 1;
-    const magnitude = Math.pow(10, Math.floor(Math.log10(range)));
-    const step = magnitude / 2;
-    const niceMin = Math.floor(min / step) * step;
-    const niceMax = Math.ceil(max / step) * step;
+    const padding = (max - min) * 0.05; // 5% padding for tighter scaling
+
+    // Round the values to the nearest 10 or 20 range
+    const roundTo = max > 1000 ? 20 : 10;
+
+    const niceMin = Math.floor((min - padding) / roundTo) * roundTo;
+    const niceMax = Math.ceil((max + padding) / roundTo) * roundTo;
+
     return [niceMin, niceMax];
   };
 
   const fetchChartData = (date, symbol) => {
-    let url = 'http://localhost:5000/api/csv-data/chart';
+    let url = 'http://localhost:5001/api/csv-data/chart';
     if (date && symbol) {
       const formattedDate = formatDateLocal(date);
-      url = `http://localhost:5000/api/csv-data/historical?date=${formattedDate}&symbol=${symbol}`;
+      url = `http://localhost:5001/api/csv-data/historical?date=${formattedDate}&symbol=${symbol}`;
     }
 
     fetch(url)

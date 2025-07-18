@@ -54,8 +54,12 @@ export default function About() {
           <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
             <div style={{ backgroundColor: '#1f1f1f', borderRadius: '10px', padding: '1rem', flex: '1 1 280px' }}>
               <h3>Akash Mishra</h3>
+              <h3>Aditya Tiwari</h3>
+              <h3>Manjeet Jii</h3>
+              <h3>Alind Gupta</h3>
               <h3>Simardeep Singh</h3>
               <h3>Aniket Singh</h3>
+              <h3>Lakshay</h3>
               <p style={{ color: '#999' }}>Founder & Quant Architect</p>
               <p>Specializes in IV modeling, algo execution, and F&O hedging.</p>
             </div>
