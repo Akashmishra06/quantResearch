@@ -8,10 +8,11 @@ import {
 } from 'recharts';
 
 const SYMBOLS = ['NIFTY', 'BANKNIFTY', 'SENSEX'];
+const API_BASE = "http://139.5.188.242:5001/api/csv-data";
 
-export default function CallPutChart() {
+export default function StraddleChart() {
   const [data, setData] = useState([]);
-  const [visibility, setVisibility] = useState({ data_call: true, data_put: true });
+  const [visible, setVisible] = useState(true);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedSymbol, setSelectedSymbol] = useState('NIFTY');
   const [yDomain, setYDomain] = useState(['auto', 'auto']);
@@ -26,18 +27,20 @@ export default function CallPutChart() {
   const computeNiceYDomain = (values) => {
     const min = Math.min(...values);
     const max = Math.max(...values);
-    const padding = (max - min) * 0.05;
+    const padding = (max - min) * 0.05; // 5% padding
+
     const roundTo = max > 1000 ? 20 : 10;
     const niceMin = Math.floor((min - padding) / roundTo) * roundTo;
     const niceMax = Math.ceil((max + padding) / roundTo) * roundTo;
+
     return [niceMin, niceMax];
   };
 
   const fetchChartData = (date, symbol) => {
-    let url = 'http://139.5.188.242:5001/api/csv-data/chart';
+    let url = `${API_BASE}/chart`;
     if (date && symbol) {
       const formattedDate = formatDateLocal(date);
-      url = `http://139.5.188.242:5001/api/csv-data/historical?date=${formattedDate}&symbol=${symbol}`;
+      url = `${API_BASE}/historical?date=${formattedDate}&symbol=${symbol}`;
     }
 
     fetch(url)
@@ -52,14 +55,13 @@ export default function CallPutChart() {
           complete: (result) => {
             const filtered = result.data.filter(row =>
               row.datetime &&
-              typeof row.data_call === 'number' &&
-              typeof row.data_put === 'number'
+              typeof row.straddleValue === 'number' &&
+              !isNaN(row.straddleValue)
             );
 
             setData(filtered);
-
             if (filtered.length) {
-              const values = filtered.flatMap(d => [d.data_call, d.data_put]);
+              const values = filtered.map(d => d.straddleValue);
               const [niceMin, niceMax] = computeNiceYDomain(values);
               setYDomain([niceMin, niceMax]);
             } else {
@@ -74,21 +76,31 @@ export default function CallPutChart() {
       });
   };
 
+  // Load latest date automatically on mount
   useEffect(() => {
-    fetchChartData(null, null);
+    fetch(`${API_BASE}/latest?symbol=${selectedSymbol}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.date) {
+          const latestDate = new Date(data.date);
+          setSelectedDate(latestDate);
+          fetchChartData(latestDate, selectedSymbol);
+        } else {
+          // fallback to default chart if no latest found
+          fetchChartData(null, null);
+        }
+      })
+      .catch(() => fetchChartData(null, null));
   }, []);
 
+  // Fetch data when user changes date or symbol
   useEffect(() => {
     if (selectedDate && selectedSymbol) {
       fetchChartData(selectedDate, selectedSymbol);
     }
   }, [selectedDate, selectedSymbol]);
 
-  const handleLegendClick = (e) => {
-    const key = e.dataKey;
-    setVisibility(prev => ({ ...prev, [key]: !prev[key] }));
-  };
-
+  const toggleVisibility = () => setVisible(v => !v);
   const accentColor = '#1abc9c';
 
   return (
@@ -111,7 +123,7 @@ export default function CallPutChart() {
         userSelect: 'none',
         fontSize: '1.8rem',
       }}>
-        📊 Call vs Put Premiums
+        📊 Straddle Premium Over Time
       </h2>
 
       <div style={{
@@ -209,37 +221,29 @@ export default function CallPutChart() {
 
           <Legend
             wrapperStyle={{ color: '#ccc' }}
-            onClick={handleLegendClick}
-            formatter={(value) => (
-              <span style={{
-                color: visibility[value] ? '#fff' : '#555',
-                cursor: 'pointer',
-                userSelect: 'none',
-              }}>
-                {value === 'data_call' ? 'Call' : 'Put'} Premium
+            onClick={toggleVisibility}
+            formatter={() => (
+              <span
+                style={{
+                  color: visible ? '#fff' : '#555',
+                  cursor: 'pointer',
+                  userSelect: 'none',
+                }}
+              >
+                Straddle Premium
               </span>
             )}
           />
 
           <Line
             type="monotone"
-            dataKey="data_call"
-            stroke="#00bfff"
+            dataKey="straddleValue"
+            stroke={accentColor}
             strokeWidth={2}
-            dot={{ r: 1.2, stroke: '#00bfff', strokeWidth: 2, fill: '#121212' }}
+            dot={{ r: 1.2, stroke: accentColor, strokeWidth: 2, fill: '#121212' }}
             activeDot={{ r: 3 }}
-            name="data_call"
-            hide={!visibility.data_call}
-          />
-          <Line
-            type="monotone"
-            dataKey="data_put"
-            stroke="#00ff88"
-            strokeWidth={2}
-            dot={{ r: 1.2, stroke: '#00ff88', strokeWidth: 2, fill: '#121212' }}
-            activeDot={{ r: 3 }}
-            name="data_put"
-            hide={!visibility.data_put}
+            name="Straddle Premium"
+            hide={!visible}
           />
         </LineChart>
       </ResponsiveContainer>

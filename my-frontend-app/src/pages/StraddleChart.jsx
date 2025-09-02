@@ -38,10 +38,10 @@ export default function StraddleChart() {
   };
 
   const fetchChartData = (date, symbol) => {
-    let url = 'http://localhost:5001/api/csv-data/chart';
+    let url = 'http://139.5.188.242:5001/api/csv-data/chart';
     if (date && symbol) {
       const formattedDate = formatDateLocal(date);
-      url = `http://localhost:5001/api/csv-data/historical?date=${formattedDate}&symbol=${symbol}`;
+      url = `http://139.5.188.242:5001/api/csv-data/historical?date=${formattedDate}&symbol=${symbol}`;
     }
 
     fetch(url)

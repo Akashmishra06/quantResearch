@@ -8,7 +8,7 @@ CORS(app)
 
 @app.route('/api/csv-data/chart', methods=['GET'])
 def get_call_put_chart():
-    csv_path = '/root/quantResearch/datad/callputChart.csv'
+    csv_path = '/root/quantResearch/newFolder/datad/callputChart.csv'
     if os.path.exists(csv_path):
         return send_file(csv_path, mimetype='text/csv')
     else:
@@ -24,7 +24,7 @@ def get_historical_csv():
 
     try:
         datetime.strptime(date_str, "%Y-%m-%d")
-        csv_path = f'/root/quantResearch/data/{symbol}/{date_str}.csv'
+        csv_path = f'/root/quantResearch/newFolder/data/{symbol}/{date_str}.csv'
         if os.path.exists(csv_path):
             return send_file(csv_path, mimetype='text/csv')
         else:
@@ -34,4 +34,5 @@ def get_historical_csv():
 
 
 if __name__ == '__main__':
-    app.run(host="139.5.188.242", port=5001, debug=True)
+    # app.run(host="139.5.188.242", port=5001, debug=True)
+    app.run(host="0.0.0.0", port=5001, debug=True)

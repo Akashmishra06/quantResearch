@@ -4,6 +4,5 @@
 *.json
 *.log
 *.pyc
-
 venv/
 node_modules/
