@@ -1,7 +1,7 @@
 ..venv/
 *.csv
 *.txt
-*.json
+# *.json
 *.log
 *.pyc
 venv/
